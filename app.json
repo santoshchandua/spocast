@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Cricket Pulse",
+    "version": "1.0.0",
+    "ios": {
+      "supportsTablet": true
+    },
+    "slug": "cricket-pulse",
+    "web": {
+      "name": "Cricket Pulse"
+    },
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.cricketpulse.demo"
+    },
+    "plugins": [
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ]
+    ]
+  }
+}
