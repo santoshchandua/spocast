@@ -8,6 +8,7 @@ export default function Players() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const [format, setFormat] = useState('T20');
+  const [group, setGroup] = useState('Batting');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
@@ -25,8 +26,11 @@ export default function Players() {
     return () => { clearTimeout(timer); controller.abort(); };
   }, [path, retry]);
 
-  const open = id => { setError(''); setSelected(id); setFormat('T20'); };
+  const open = id => { setError(''); setSelected(id); setFormat('T20'); setGroup('Batting'); };
   const statistics = selected && data ? data.statistics.filter(stat => stat.format === format) : [];
+  const groups = [...new Set(statistics.map(stat => stat.group || 'Batting'))];
+  const activeGroup = groups.includes(group) ? group : groups[0];
+  const visibleStatistics = statistics.filter(stat => (stat.group || 'Batting') === activeGroup);
   return <View>
     <Text style={s.kicker}>THE PEOPLE BEHIND THE GAME</Text>
     <Text style={s.pageTitle}>{selected && data ? data.name : 'Players'}</Text>
@@ -57,7 +61,8 @@ export default function Players() {
       <View style={s.card}>
         <Text style={s.heading}>Individual statistics</Text>
         <View style={s.filters}>{['T20', 'ODI', 'TEST'].map(value => <Action key={value} title={value} secondary={format !== value} onPress={() => setFormat(value)} />)}</View>
-        {statistics.length ? statistics.map((stat, i) => <View key={`${stat.label}-${i}`} style={s.infoRow}><Text style={[s.body, { flex: 1 }]}>{stat.label}</Text><Text style={s.infoValue}>{stat.value}</Text></View>) : <Text style={s.body}>No {format} statistics are available yet.</Text>}
+        <View style={s.filters}>{groups.map(value => <Action key={value} title={value} secondary={activeGroup !== value} onPress={() => setGroup(value)} />)}</View>
+        {visibleStatistics.length ? visibleStatistics.map((stat, i) => <View key={`${stat.label}-${i}`} style={s.infoRow}><View style={{ flex: 2 }}><Text style={s.body}>{stat.label}</Text>{!!stat.definition && <Text style={s.meta}>{stat.definition}</Text>}</View><Text style={[s.infoValue, stat.value == null && { color: colors.muted, fontSize: 13 }]}>{stat.value ?? 'Not available'}</Text></View>) : <Text style={s.body}>No {format} statistics are available yet.</Text>}
         <Text style={[s.meta, { marginTop: 18 }]}>Statistics reflect the available provider snapshot. Missing figures are not treated as zero.</Text>
       </View>
       <View style={s.card}>
@@ -71,4 +76,3 @@ export default function Players() {
     </>}
   </View>;
 }
-
