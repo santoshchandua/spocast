@@ -6,6 +6,7 @@ import { request } from './api';
 import { s, colors } from './styles';
 import Account from './Account';
 import Records from './Records';
+import Players from './Players';
 import AudioCommentary from './AudioCommentary';
 import { AuthProvider, useAuth } from './AuthContext';
 import { AdSlot, MatchTools } from './Features';
@@ -93,7 +94,7 @@ function Main() {
   return <SafeAreaView style={s.safe}><StatusBar style="dark" />
     <View style={s.header}><View><Text style={s.brand}>cricket<Text style={{ color: colors.green }}>pulse /</Text></Text><Text style={s.meta}>EVERY BALL. EVERY MOMENT.</Text></View><View style={s.demoBadge}><Text style={s.demoText}>{matches.some(m=>m.dataMode==='licensed')?'PULSE':'DEMO'}</Text></View></View>
     <ScrollView ref={scroll} contentContainerStyle={s.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.green} />}>
-      {tab === 'Records' && !selection ? <Records /> : tab === 'Account' && !selection ? <Account /> : selection ? <><Button onPress={() => setSelection(null)} style={s.back}>‹ Back to {tab.toLowerCase()}</Button>
+      {tab === 'Players' && !selection ? <Players /> : tab === 'Records' && !selection ? <Records /> : tab === 'Account' && !selection ? <Account /> : selection ? <><Button onPress={() => setSelection(null)} style={s.back}>‹ Back to {tab.toLowerCase()}</Button>
         {detailError ? <><Empty title="Connection interrupted" message={detailError} /><Button onPress={() => setRetry(r => r + 1)}>Try again</Button></> : !detail ? <ActivityIndicator style={s.loader} color={colors.green} size="large" /> : selection.type === 'news' ? <View style={s.newsCard}><Text style={s.category}>{detail.category} · SAMPLE ARTICLE</Text><Text style={s.readerTitle}>{detail.title}</Text><Text style={s.meta}>{detail.readMinutes} min read</Text>{detail.body.map((p, i) => <Text key={i} style={s.paragraph}>{p}</Text>)}</View> : <>
           <MatchCard match={detail} featured onPress={() => setDetailTab('Overview')} />
           <MatchTools match={detail} onAccount={()=>{setSelection(null);setTab('Account');}} />
@@ -113,7 +114,8 @@ function Main() {
         <Text style={s.footer}>CRICKET PULSE / YOUR MATCH CENTRE</Text>
       </>}
     </ScrollView>
-    <View style={s.navigation}>{[['Scores', '◉'], ['Fixtures', '▦'], ['News', '☰'],['Records','☆'],['Account','◎']].map(([name, icon]) => <Pressable accessibilityRole="tab" accessibilityState={{ selected: tab === name }} accessibilityLabel={name} key={name} onPress={() => { setSelection(null); setTab(name); scroll.current?.scrollTo({ y: 0, animated: false }); }} style={s.navItem}><Text style={[s.navIcon, tab === name && { color: colors.green }]}>{icon}</Text><Text style={[s.navLabel, tab === name && { color: colors.green, fontWeight: '700' }]}>{name}</Text></Pressable>)}</View>
+    <View style={s.navigation}>{[['Scores', '◉'], ['Fixtures', '▦'], ['News', '☰'],['Records','☆'],['Players','♙'],['Account','◎']].map(([name, icon]) => <Pressable accessibilityRole="tab" accessibilityState={{ selected: tab === name }} accessibilityLabel={name} key={name} onPress={() => { setSelection(null); setTab(name); scroll.current?.scrollTo({ y: 0, animated: false }); }} style={s.navItem}><Text style={[s.navIcon, tab === name && { color: colors.green }]}>{icon}</Text><Text style={[s.navLabel, tab === name && { color: colors.green, fontWeight: '700' }]}>{name}</Text></Pressable>)}</View>
   </SafeAreaView>;
 }
 export default function App() { return <SafeAreaProvider><AuthProvider><Main /></AuthProvider></SafeAreaProvider>; }
+
