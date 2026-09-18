@@ -7,6 +7,7 @@ import { s, colors } from './styles';
 import Account from './Account';
 import Records from './Records';
 import Players from './Players';
+import Series from './Series';
 import AudioCommentary from './AudioCommentary';
 import { AuthProvider, useAuth } from './AuthContext';
 import { AdSlot, MatchTools } from './Features';
@@ -35,7 +36,7 @@ function Scorecard({ innings }) {
 }
 function Main() {
   const auth = useAuth();
-  const [tab, setTab] = useState('Scores');
+  const [tab, setTab] = useState('Matches');
   const [filter, setFilter] = useState('all');
   const [matches, setMatches] = useState([]);
   const [news, setNews] = useState([]);
@@ -83,18 +84,18 @@ function Main() {
   useEffect(() => {
     const listener = BackHandler.addEventListener('hardwareBackPress', () => {
       if (selection) { setSelection(null); return true; }
-      if (tab !== 'Scores') { setTab('Scores'); return true; }
+      if (tab !== 'Matches') { setTab('Matches'); return true; }
       return false;
     });
     return () => listener.remove();
   }, [selection, tab]);
   const open = (type, id) => { setDetail(null); setDetailError(''); setDetailTab('Overview'); setSelection({ type, id }); };
-  const visible = matches.filter(m => tab === 'Fixtures' ? m.status === 'upcoming' : filter === 'following' ? favorites.includes(m.id) : filter === 'all' || m.status === filter);
+  const visible = matches.filter(m => filter === 'following' ? favorites.includes(m.id) : filter === 'all' || m.status === filter);
   const refresh = () => { if (selection) setRetry(r => r + 1); else { setRefreshing(true); load(); } };
   return <SafeAreaView style={s.safe}><StatusBar style="dark" />
     <View style={s.header}><View><Text style={s.brand}>cricket<Text style={{ color: colors.green }}>pulse /</Text></Text><Text style={s.meta}>EVERY BALL. EVERY MOMENT.</Text></View><View style={s.demoBadge}><Text style={s.demoText}>{matches.some(m=>m.dataMode==='licensed')?'PULSE':'DEMO'}</Text></View></View>
     <ScrollView ref={scroll} contentContainerStyle={s.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.green} />}>
-      {tab === 'Players' && !selection ? <Players /> : tab === 'Records' && !selection ? <Records /> : tab === 'Account' && !selection ? <Account /> : selection ? <><Button onPress={() => setSelection(null)} style={s.back}>‹ Back to {tab.toLowerCase()}</Button>
+      {tab === 'Series' && !selection ? <Series /> : tab === 'Players' && !selection ? <Players /> : tab === 'Records' && !selection ? <Records /> : tab === 'Account' && !selection ? <Account /> : selection ? <><Button onPress={() => setSelection(null)} style={s.back}>‹ Back to {tab.toLowerCase()}</Button>
         {detailError ? <><Empty title="Connection interrupted" message={detailError} /><Button onPress={() => setRetry(r => r + 1)}>Try again</Button></> : !detail ? <ActivityIndicator style={s.loader} color={colors.green} size="large" /> : selection.type === 'news' ? <View style={s.newsCard}><Text style={s.category}>{detail.category} · SAMPLE ARTICLE</Text><Text style={s.readerTitle}>{detail.title}</Text><Text style={s.meta}>{detail.readMinutes} min read</Text>{detail.body.map((p, i) => <Text key={i} style={s.paragraph}>{p}</Text>)}</View> : <>
           <MatchCard match={detail} featured onPress={() => setDetailTab('Overview')} />
           <MatchTools match={detail} onAccount={()=>{setSelection(null);setTab('Account');}} />
@@ -103,18 +104,18 @@ function Main() {
           {detailTab === 'Overview' ? <View style={s.card}><Text style={s.heading}>Match information</Text>{[['Series', detail.series], ['Venue', detail.venue], ['Format', detail.format], ['Starts', new Date(detail.startTime).toLocaleString()]].map(([k, v]) => <View key={k} style={s.infoRow}><Text style={s.body}>{k}</Text><Text style={s.infoValue}>{v}</Text></View>)}<Text style={[s.body, { marginTop: 16 }]}>Fictional demo fixture. Scores are fixed snapshots and do not represent a real live match.</Text></View> : detailTab === 'Scorecard' ? <Scorecard innings={detail.innings} /> : detail.commentary.length ? <View style={s.card}><Text style={s.heading}>Ball by ball</Text><Text style={[s.meta, { marginTop: 6 }]}>Latest first · Sample commentary</Text>{detail.commentary.map(ball => <View key={ball.over} style={s.commentRow}><View><Text style={s.player}>{ball.over}</Text><View style={[s.runBadge, ['4', '6'].includes(ball.runs) && { backgroundColor: colors.lime }]}><Text style={s.player}>{ball.runs}</Text></View></View><Text style={[s.body, { flex: 1 }]}>{ball.text}</Text></View>)}</View> : <Empty title={detail.status === 'upcoming' ? 'The first ball is still to come' : 'No commentary in this demo'} message="Open India vs Australia to explore sample ball-by-ball commentary." />}
         </>}
       </> : <>
-        <View style={s.sectionHeader}><View><Text style={s.kicker}>THE CRICKET DESK</Text><Text style={s.pageTitle}>{tab === 'Scores' ? 'Match day' : tab === 'Fixtures' ? 'Coming up' : 'Inside the game'}</Text></View>{tab === 'Scores' && <Text style={s.liveCount}>{matches.filter(m => m.status === 'live').length} LIVE</Text>}</View>
+        <View style={s.sectionHeader}><View><Text style={s.kicker}>THE CRICKET DESK</Text><Text style={s.pageTitle}>{tab === 'Matches' ? 'Match day' : tab === 'Fixtures' ? 'Coming up' : 'Inside the game'}</Text></View>{tab === 'Matches' && <Text style={s.liveCount}>{matches.filter(m => m.status === 'live').length} LIVE</Text>}</View>
         <View style={s.notice}><Text style={s.noticeText}>{matches.some(m=>m.dataMode==='licensed')?'Scores from your licensed feed · Check match update times':'Demo edition · Fictional matches and sample articles'}</Text></View>
         {!!error && <View style={s.error}><Text style={s.body}>{error}</Text>{!!matches.length && <Text style={s.meta}>Showing previously loaded demo data.</Text>}<Button onPress={load} style={{ marginTop: 12 }}>Retry connection</Button></View>}
         {loading ? <ActivityIndicator style={s.loader} size="large" color={colors.green} /> : tab === 'News' ? news.length ? news.map((a, i) => <Pressable accessibilityRole="button" key={a.id} onPress={() => open('news', a.id)} style={s.newsCard}><View style={s.rowBetween}><Text style={s.category}>{a.category}</Text><Text style={s.meta}>0{i + 1} / READ</Text></View><Text style={s.articleTitle}>{a.title}</Text><Text style={s.body}>{a.summary}</Text><Text style={[s.meta, { marginTop: 16 }]}>{a.readMinutes} min read  ↗</Text></Pressable>) : <Empty title="No articles available" message="Pull down to refresh or check the API connection." /> : <>
-          {tab === 'Scores' && <View style={s.filters}>{[['all', 'All'], ['live', 'Live'], ['upcoming', 'Upcoming'], ['completed', 'Results'],['following','Following']].map(([value, label]) => <Button key={value} active={filter === value} onPress={() => setFilter(value)}>{label}</Button>)}</View>}
-          {visible.length ? visible.map((m, i) => <MatchCard key={m.id} match={m} featured={tab === 'Scores' && i === 0 && m.status === 'live'} onPress={() => open('matches', m.id)} />) : <Empty title="No matches to show" message="Try another filter or pull down to refresh." />}
+          {tab === 'Matches' && <View style={s.filters}>{[['all', 'All'], ['live', 'Live'], ['upcoming', 'Fixtures'], ['completed', 'Results'],['following','Following']].map(([value, label]) => <Button key={value} active={filter === value} onPress={() => setFilter(value)}>{label}</Button>)}</View>}
+          {visible.length ? visible.map((m, i) => <MatchCard key={m.id} match={m} featured={tab === 'Matches' && i === 0 && m.status === 'live'} onPress={() => open('matches', m.id)} />) : <Empty title="No matches to show" message="Try another filter or pull down to refresh." />}
         </>}
         <AdSlot placement={tab==='News'?'news_inline':'scores_inline'} />
         <Text style={s.footer}>CRICKET PULSE / YOUR MATCH CENTRE</Text>
       </>}
     </ScrollView>
-    <View style={s.navigation}>{[['Scores', '◉'], ['Fixtures', '▦'], ['News', '☰'],['Records','☆'],['Players','♙'],['Account','◎']].map(([name, icon]) => <Pressable accessibilityRole="tab" accessibilityState={{ selected: tab === name }} accessibilityLabel={name} key={name} onPress={() => { setSelection(null); setTab(name); scroll.current?.scrollTo({ y: 0, animated: false }); }} style={s.navItem}><Text style={[s.navIcon, tab === name && { color: colors.green }]}>{icon}</Text><Text style={[s.navLabel, tab === name && { color: colors.green, fontWeight: '700' }]}>{name}</Text></Pressable>)}</View>
+    <View style={s.navigation}>{[['Matches', '◉'], ['Series', '▦'], ['News', '☰'],['Records','☆'],['Players','♙'],['Account','◎']].map(([name, icon]) => <Pressable accessibilityRole="tab" accessibilityState={{ selected: tab === name }} accessibilityLabel={name} key={name} onPress={() => { setSelection(null); setTab(name); scroll.current?.scrollTo({ y: 0, animated: false }); }} style={s.navItem}><Text style={[s.navIcon, tab === name && { color: colors.green }]}>{icon}</Text><Text style={[s.navLabel, tab === name && { color: colors.green, fontWeight: '700' }]}>{name}</Text></Pressable>)}</View>
   </SafeAreaView>;
 }
 export default function App() { return <SafeAreaProvider><AuthProvider><Main /></AuthProvider></SafeAreaProvider>; }

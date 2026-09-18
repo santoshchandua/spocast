@@ -9,3 +9,5 @@ Includes scores, fixtures, commentary, AI narration playback, rankings, records,
 Web hosted Razorpay checkout supports eligible UPI/AutoPay when the merchant enables it. Native digital purchases remain disabled pending store billing integration. This is a production-oriented foundation, not an approved commercial release.
 
 Verification: npx expo export --platform all. Android/iOS/web bundles validated; physical-device testing, actual audio playback and store release review remain. Nine moderate Expo toolchain audit advisories remain for review. Read the backend security and deployment guides before release.
+
+Latest update: Matches combines scores and fixtures with a top Fixtures filter. Series provides batting, bowling and fielding leaderboards. Backend migrations 005/006 add archive retention and series statistics; the API requires current migrations. Series data remains fictional until the licensed importer is configured.
